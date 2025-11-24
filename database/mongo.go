@@ -5,7 +5,7 @@ import (
 	"time"
 	"log"
 
-	"prestasi_backend/app/config"
+	"prestasi_backend/config"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

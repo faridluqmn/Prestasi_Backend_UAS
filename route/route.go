@@ -4,10 +4,12 @@ import (
     "prestasi_backend/middleware"
     "prestasi_backend/app/service"
 
+	"fmt"
     "github.com/gofiber/fiber/v2"
 )
 
 func SetupRoutes(app *fiber.App) {
+	fmt.Println("🔥 ROUTES LOADED")
 
 	api := app.Group("/api/v1")
 

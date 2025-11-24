@@ -1,9 +1,30 @@
 package model
 
+import (
+    "time"
+	"github.com/golang-jwt/jwt/v5"
+)
+
 type User struct {
-	ID       string `json:"id"`
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	PasswordHash  string `json:"-"`
+	FullName  string    `json:"full_name"`
+	RoleID    string    `json:"role_id"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type LoginRequest struct {
 	Username string `json:"username"`
-	Password string `json:"-"` // jangan tampilkan di JSON
-	RoleID   string `json:"role_id"`
-	Role     *Role  `json:"role,omitempty"` // optional join
+	Password string `json:"password"`
+}
+
+type JWTClaims struct {
+	UserID      string   `json:"user_id"`
+	RoleName    string   `json:"role"`
+	Permissions []string `json:"permissions"`
+	jwt.RegisteredClaims
 }

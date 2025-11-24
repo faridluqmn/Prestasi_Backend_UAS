@@ -2,24 +2,31 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"time"
+
 	"prestasi_backend/app/model"
 	"prestasi_backend/database"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func getAchievementColl() (*mongo.Collection, error) {
+// =====================================
+// ACHIEVEMENTS (MongoDB)
+// =====================================
+
+func getAchievementCollection() (*mongo.Collection, error) {
 	if database.MongoDB == nil {
-		return nil, errors.New("MongoDB belum terkoneksi — pastikan ConnectMongo() sudah dipanggil")
+		return nil, errors.New("MongoDB belum terkoneksi – panggil ConnectMongo() di main.go")
 	}
 	return database.MongoDB.Collection("achievements"), nil
 }
 
 // Create achievement di Mongo
 func CreateAchievement(doc *model.AchievementMongo) (string, error) {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return "", err
 	}
@@ -40,9 +47,9 @@ func CreateAchievement(doc *model.AchievementMongo) (string, error) {
 	return oid.Hex(), nil
 }
 
-// Get achievement by ID
+// Ambil achievement berdasarkan ID Mongo
 func GetAchievementByID(id string) (*model.AchievementMongo, error) {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +69,9 @@ func GetAchievementByID(id string) (*model.AchievementMongo, error) {
 	return &doc, nil
 }
 
-// List achievement by studentId
+// Ambil semua achievement berdasarkan studentId
 func GetAchievementsByStudentID(studentID string) ([]model.AchievementMongo, error) {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +96,9 @@ func GetAchievementsByStudentID(studentID string) ([]model.AchievementMongo, err
 	return list, cur.Err()
 }
 
-// Update achievement
+// Update achievement (title, description, dsb.)
 func UpdateAchievement(id string, update bson.M) error {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return err
 	}
@@ -101,18 +108,25 @@ func UpdateAchievement(id string, update bson.M) error {
 		return err
 	}
 
+	if update == nil {
+		update = bson.M{}
+	}
 	update["updatedAt"] = time.Now()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err = coll.UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": update})
+	_, err = coll.UpdateOne(ctx,
+		bson.M{"_id": oid},
+		bson.M{"$set": update},
+	)
 	return err
 }
 
-// Delete achievement
+// Hapus achievement (hard delete di Mongo)
+// Di Postgre hanya soft delete via status
 func DeleteAchievement(id string) error {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return err
 	}
@@ -129,9 +143,9 @@ func DeleteAchievement(id string) error {
 	return err
 }
 
-// Tambah attachment (nama file disimpan di array attachments)
+// Tambah attachment (nama file) ke array attachments
 func AddAchievementAttachment(id, filename string) error {
-	coll, err := getAchievementColl()
+	coll, err := getAchievementCollection()
 	if err != nil {
 		return err
 	}

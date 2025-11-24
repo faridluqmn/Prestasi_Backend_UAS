@@ -5,13 +5,13 @@ import (
 	"prestasi_backend/database"
 )
 
-// Ambil semua permission
 func GetAllPermissions() ([]model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description
 		FROM permissions
 		ORDER BY name;
 	`
+
 	rows, err := database.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -35,13 +35,13 @@ func GetAllPermissions() ([]model.Permission, error) {
 	return list, rows.Err()
 }
 
-// Ambil permission berdasarkan ID
 func GetPermissionByID(id string) (*model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description
 		FROM permissions
 		WHERE id = $1;
 	`
+
 	var p model.Permission
 	err := database.DB.QueryRow(query, id).Scan(
 		&p.ID,
@@ -56,13 +56,13 @@ func GetPermissionByID(id string) (*model.Permission, error) {
 	return &p, nil
 }
 
-// Ambil permission berdasarkan name (misal "achievement:create")
 func GetPermissionByName(name string) (*model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description
 		FROM permissions
 		WHERE name = $1;
 	`
+
 	var p model.Permission
 	err := database.DB.QueryRow(query, name).Scan(
 		&p.ID,

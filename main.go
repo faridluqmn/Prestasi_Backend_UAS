@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 
-	"prestasi_backend/app/config"
-	"prestasi_backend/app/database"
+	"prestasi_backend/config"
+	"prestasi_backend/database"
+	"prestasi_backend/route"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	database.PostgresDB = postgresDB
+	database.DB = postgresDB
 
 	// 3. Connect MongoDB
 	mongoDB, err := database.ConnectMongo()
@@ -37,8 +38,12 @@ func main() {
 		})
 	})
 
+	// 4. REGISTER ROUTES
+	route.SetupRoutes(app)
+
 	port := config.Get("APP_PORT")
 	log.Println("🚀 Server running on port", port)
 
 	app.Listen(":" + port)
+
 }

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	"prestasi_backend/app/config"
+	"prestasi_backend/config"
 
 	_ "github.com/lib/pq"
 )
 
-var PostgresDB *sql.DB
+var DB *sql.DB
 
 func ConnectPostgre() (*sql.DB, error) {
 	dsn := config.Get("POSTGRES_DSN")

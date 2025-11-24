@@ -6,10 +6,11 @@ import (
 	"prestasi_backend/database"
 )
 
-// Ambil semua user (untuk admin list)
+// Ambil semua user (untuk list admin)
 func GetAllUsers() ([]model.User, error) {
 	query := `
-		SELECT id, username, password, role_id, created_at, updated_at
+		SELECT id, username, email, password_hash, full_name,
+		       role_id, is_active, created_at, updated_at
 		FROM users
 		ORDER BY created_at DESC;
 	`
@@ -26,8 +27,11 @@ func GetAllUsers() ([]model.User, error) {
 		if err := rows.Scan(
 			&u.ID,
 			&u.Username,
-			&u.Password,
+			&u.Email,
+			&u.PasswordHash,   // password_hash
+			&u.FullName,
 			&u.RoleID,
+			&u.IsActive,
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		); err != nil {
@@ -41,7 +45,8 @@ func GetAllUsers() ([]model.User, error) {
 // Ambil user berdasarkan ID
 func GetUserByID(id string) (*model.User, error) {
 	query := `
-		SELECT id, username, password, role_id, created_at, updated_at
+		SELECT id, username, email, password_hash, full_name,
+		       role_id, is_active, created_at, updated_at
 		FROM users
 		WHERE id = $1;
 	`
@@ -50,8 +55,11 @@ func GetUserByID(id string) (*model.User, error) {
 	err := database.DB.QueryRow(query, id).Scan(
 		&u.ID,
 		&u.Username,
-		&u.Password,
+		&u.Email,
+		&u.PasswordHash,
+		&u.FullName,
 		&u.RoleID,
+		&u.IsActive,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -64,7 +72,8 @@ func GetUserByID(id string) (*model.User, error) {
 // Ambil user berdasarkan username (untuk login)
 func GetUserByUsername(username string) (*model.User, error) {
 	query := `
-		SELECT id, username, password, role_id, created_at, updated_at
+		SELECT id, username, email, password_hash, full_name,
+		       role_id, is_active, created_at, updated_at
 		FROM users
 		WHERE username = $1;
 	`
@@ -73,8 +82,11 @@ func GetUserByUsername(username string) (*model.User, error) {
 	err := database.DB.QueryRow(query, username).Scan(
 		&u.ID,
 		&u.Username,
-		&u.Password,
+		&u.Email,
+		&u.PasswordHash,
+		&u.FullName,
 		&u.RoleID,
+		&u.IsActive,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -87,27 +99,51 @@ func GetUserByUsername(username string) (*model.User, error) {
 // Tambah user baru
 func CreateUser(u *model.User) error {
 	query := `
-		INSERT INTO users (id, username, password, role_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, NOW(), NOW());
+		INSERT INTO users (
+			id, username, email, password_hash, full_name,
+			role_id, is_active, created_at, updated_at
+		)
+		VALUES ($1, $2, $3, $4, $5,
+		        $6, $7, NOW(), NOW());
 	`
-	_, err := database.DB.Exec(query, u.ID, u.Username, u.Password, u.RoleID)
+	_, err := database.DB.Exec(
+		query,
+		u.ID,
+		u.Username,
+		u.Email,
+		u.PasswordHash,
+		u.FullName,
+		u.RoleID,
+		u.IsActive,
+	)
 	return err
 }
 
-// Update user (tanpa ganti role)
-func UpdateUser(id string, u *model.User) error {
+// Update data user (kecuali role_id)
+func UpdateUser(u *model.User) error {
 	query := `
 		UPDATE users
 		SET username = $1,
-		    password = $2,
+		    email = $2,
+		    password_hash = $3,
+		    full_name = $4,
+		    is_active = $5,
 		    updated_at = NOW()
-		WHERE id = $3;
+		WHERE id = $6;
 	`
-	_, err := database.DB.Exec(query, u.Username, u.Password, id)
+	_, err := database.DB.Exec(
+		query,
+		u.Username,
+		u.Email,
+		u.PasswordHash,
+		u.FullName,
+		u.IsActive,
+		u.ID,
+	)
 	return err
 }
 
-// Delete user
+// Hapus user (hard delete)
 func DeleteUser(id string) error {
 	query := `DELETE FROM users WHERE id = $1;`
 	_, err := database.DB.Exec(query, id)
@@ -126,14 +162,7 @@ func UpdateUserRole(userID, roleID string) error {
 	return err
 }
 
-// (opsional) hitung total user
-func CountUsers() (int64, error) {
-	var total int64
-	err := database.DB.QueryRow(`SELECT COUNT(*) FROM users;`).Scan(&total)
-	return total, err
-}
-
-// helper kalau mau cek err no rows
+// Helper: cek apakah error karena row tidak ditemukan
 func IsNoRows(err error) bool {
 	return err == sql.ErrNoRows
 }
