@@ -61,8 +61,8 @@ func SetupRoutes(app *fiber.App) {
 	lect.Get("/:id/advisees", service.LecturerAdvisees)
 
 	// 5.8 REPORTS
-	// reports := api.Group("/reports", middleware.JWTRequired())
+	reports := api.Group("/reports", middleware.JWTRequired())
 
-	// reports.Get("/statistics", service.ReportStatistics)
-	// reports.Get("/student/:id", service.ReportStudent)
+	reports.Get("/statistics", service.ReportStatistics)
+	reports.Get("/student/:id", service.ReportStudent)
 }
