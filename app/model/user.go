@@ -28,3 +28,24 @@ type JWTClaims struct {
 	Permissions []string `json:"permissions"`
 	jwt.RegisteredClaims
 }
+
+type UserCreateRequest struct {
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	FullName  string `json:"full_name"`
+	RoleID    string `json:"role_id"`
+	IsActive  bool   `json:"is_active"`
+}
+
+type UserUpdateRequest struct {
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Password  string `json:"password"` // optional
+	FullName  string `json:"full_name"`
+	IsActive  bool   `json:"is_active"`
+}
+
+type UserUpdateRoleRequest struct {
+	RoleID string `json:"role_id"`
+}
