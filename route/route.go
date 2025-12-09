@@ -9,21 +9,17 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-	fmt.Println("🔥 ROUTES LOADED")
+	fmt.Println("ROUTES LOADED")
 
 	api := app.Group("/api/v1")
 
-	// ============================================
 	// 5.1 AUTHENTICATION
-	// ============================================
 	api.Post("/auth/login", service.AuthLogin)
-	api.Post("/auth/refresh", middleware.JWTRequired(), service.AuthRefresh)
 	api.Post("/auth/logout", middleware.JWTRequired(), service.AuthLogout)
+	api.Post("/auth/refresh", middleware.JWTRequired(), service.AuthRefresh)
 	api.Get("/auth/profile", middleware.JWTRequired(), service.AuthProfile)
 
-	// ============================================
 	// 5.2 USERS (Admin Only)
-	// ============================================
 	users := api.Group("/users", middleware.JWTRequired())
 
 	users.Get("/", middleware.PermissionRequired("user:manage"), service.UserList)
@@ -33,9 +29,7 @@ func SetupRoutes(app *fiber.App) {
 	users.Delete("/:id", middleware.PermissionRequired("user:manage"), service.UserDelete)
 	users.Put("/:id/role", middleware.PermissionRequired("user:manage"), service.UserUpdateRole)
 
-	// ============================================
 	// 5.4 ACHIEVEMENTS
-	// ============================================
 	ach := api.Group("/achievements", middleware.JWTRequired())
 
 	ach.Get("/", service.AchievementList)
@@ -52,9 +46,7 @@ func SetupRoutes(app *fiber.App) {
 	ach.Get("/:id/history", service.AchievementHistory)
 	ach.Post("/:id/attachments", middleware.PermissionRequired("achievement:update"), service.AchievementUploadAttachment)
 
-	// ============================================
 	// 5.5 STUDENTS
-	// ============================================
 	students := api.Group("/students", middleware.JWTRequired())
 
 	students.Get("/", service.StudentList)
@@ -62,19 +54,15 @@ func SetupRoutes(app *fiber.App) {
 	students.Get("/:id/achievements", service.StudentAchievements)
 	students.Put("/:id/advisor", middleware.PermissionRequired("user:manage"), service.StudentSetAdvisor)
 
-	// ============================================
 	// 5.5 LECTURERS
-	// ============================================
 	lect := api.Group("/lecturers", middleware.JWTRequired())
 
 	lect.Get("/", service.LecturerList)
 	lect.Get("/:id/advisees", service.LecturerAdvisees)
 
-	// ============================================
 	// 5.8 REPORTS
-	// ============================================
-	reports := api.Group("/reports", middleware.JWTRequired())
+	// reports := api.Group("/reports", middleware.JWTRequired())
 
-	reports.Get("/statistics", service.ReportStatistics)
-	reports.Get("/student/:id", service.ReportStudent)
+	// reports.Get("/statistics", service.ReportStatistics)
+	// reports.Get("/student/:id", service.ReportStudent)
 }
