@@ -24,8 +24,14 @@ func getAchievementCollection() (*mongo.Collection, error) {
 	return database.MongoDB.Collection("achievements"), nil
 }
 
-// Create achievement di Mongo
-func CreateAchievement(doc *model.AchievementMongo) (string, error) {
+// @Summary      Submit Prestasi
+// @Description  Mahasiswa menambahkan laporan prestasi baru ke MongoDB [cite: 178-185]
+// @Tags         achievements
+// @Security     BearerAuth
+// @Param        achievement  body  model.AchievementCreateRequest  true  "Data Prestasi"
+// @Success      201  {object}  model.AchievementMongo
+// @Router       /achievements [post]
+var CreateAchievement = func(doc *model.AchievementMongo) (string, error) {
 	coll, err := getAchievementCollection()
 	if err != nil {
 		return "", err
@@ -47,7 +53,13 @@ func CreateAchievement(doc *model.AchievementMongo) (string, error) {
 	return oid.Hex(), nil
 }
 
-// Ambil achievement berdasarkan ID Mongo
+// @Summary      Get Detail Prestasi
+// @Description  Mengambil detail data prestasi dari MongoDB berdasarkan ID [cite: 210, 247]
+// @Tags         achievements
+// @Security     BearerAuth
+// @Param        id   path   string  true  "Mongo Achievement ID"
+// @Success      200  {object}  model.AchievementMongo
+// @Router       /achievements/{id} [get]
 func GetAchievementByID(id string) (*model.AchievementMongo, error) {
 	coll, err := getAchievementCollection()
 	if err != nil {
@@ -70,7 +82,7 @@ func GetAchievementByID(id string) (*model.AchievementMongo, error) {
 }
 
 // Ambil semua achievement berdasarkan studentId
-func GetAchievementsByStudentID(studentID string) ([]model.AchievementMongo, error) {
+var GetAchievementsByStudentID = func(studentID string) ([]model.AchievementMongo, error) {
 	coll, err := getAchievementCollection()
 	if err != nil {
 		return nil, err
@@ -123,8 +135,13 @@ func UpdateAchievement(id string, update bson.M) error {
 	return err
 }
 
-// Hapus achievement (hard delete di Mongo)
-// Di Postgre hanya soft delete via status
+// @Summary      Hapus Prestasi
+// @Description  Menghapus data prestasi dari MongoDB (Hard Delete) [cite: 203]
+// @Tags         achievements
+// @Security     BearerAuth
+// @Param        id   path   string  true  "Mongo Achievement ID"
+// @Success      200  {object}  map[string]string "Success message"
+// @Router       /achievements/{id} [delete]
 func DeleteAchievement(id string) error {
 	coll, err := getAchievementCollection()
 	if err != nil {
