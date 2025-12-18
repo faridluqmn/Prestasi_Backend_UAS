@@ -24,6 +24,9 @@ func JWTRequired() fiber.Handler {
             })
         }
 
+        // Simpan ke context (FULL claims)
+        c.Locals("user", userClaims)
+
         // Simpan ke context agar service bisa pakai
         c.Locals("userId", userClaims.UserID)
         c.Locals("role", userClaims.RoleName)

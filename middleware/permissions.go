@@ -1,6 +1,7 @@
 package middleware
 
 import (
+    "prestasi_backend/app/model"
     "github.com/gofiber/fiber/v2"
 )
 
@@ -8,17 +9,18 @@ import (
 func PermissionRequired(required string) fiber.Handler {
     return func(c *fiber.Ctx) error {
 
-        perms := c.Locals("permissions")
-        if perms == nil {
+        // Ambil claims dari middleware JWTRequired
+        claims, ok := c.Locals("user").(*model.JWTClaims)
+        if !ok {
             return c.Status(403).JSON(fiber.Map{
-                "error": "Permissions not loaded",
+                "error": "Unauthorized: invalid token claims",
             })
         }
 
-        // permissions disimpan sebagai []string
-        userPerms := perms.([]string)
+        // ambil permission list dari token
+        userPerms := claims.Permissions
 
-        // cek apakah required permission ada di userPerms
+        // cek apakah permission sesuai
         for _, p := range userPerms {
             if p == required {
                 return c.Next()
@@ -26,7 +28,7 @@ func PermissionRequired(required string) fiber.Handler {
         }
 
         return c.Status(403).JSON(fiber.Map{
-            "error": "You don't have permission to perform this action",
+            "error": "Forbidden: missing permission (" + required + ")",
         })
     }
 }

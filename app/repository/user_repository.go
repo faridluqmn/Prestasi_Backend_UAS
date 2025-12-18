@@ -28,7 +28,7 @@ func GetAllUsers() ([]model.User, error) {
 			&u.ID,
 			&u.Username,
 			&u.Email,
-			&u.PasswordHash,   // password_hash
+			&u.PasswordHash, // password_hash
 			&u.FullName,
 			&u.RoleID,
 			&u.IsActive,
@@ -146,8 +146,18 @@ func UpdateUser(u *model.User) error {
 // Hapus user (hard delete)
 func DeleteUser(id string) error {
 	query := `DELETE FROM users WHERE id = $1;`
-	_, err := database.DB.Exec(query, id)
-	return err
+
+	res, err := database.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	affected, _ := res.RowsAffected()
+	if affected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 // Update role user
