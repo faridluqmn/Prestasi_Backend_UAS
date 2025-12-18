@@ -5,7 +5,22 @@ import (
 	"prestasi_backend/app/repository"
 )
 
-// GET /students
+// ==================================================================
+// LIST STUDENTS
+// ==================================================================
+
+// StudentList godoc
+// @Summary      Lihat Daftar Mahasiswa
+// @Description  Admin melihat semua mahasiswa. Dosen Wali hanya melihat mahasiswa bimbingannya.
+// @Tags         Student
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /students [get]
 func StudentList(c *fiber.Ctx) error {
 	role := c.Locals("role").(string)
 	userID := c.Locals("userId").(string)
@@ -42,7 +57,22 @@ func StudentList(c *fiber.Ctx) error {
 	return c.Status(403).JSON(fiber.Map{"error": "Forbidden"})
 }
 
-// GET /students/:id
+// ==================================================================
+// STUDENT DETAIL
+// ==================================================================
+
+// StudentDetail godoc
+// @Summary      Detail Mahasiswa
+// @Description  Melihat detail data satu mahasiswa. Mahasiswa hanya bisa lihat diri sendiri. Dosen hanya bimbingannya.
+// @Tags         Student
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Student ID (UUID)"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Router       /students/{id} [get]
 func StudentDetail(c *fiber.Ctx) error {
 	id := c.Params("id")
 	role := c.Locals("role").(string)
@@ -80,7 +110,23 @@ func StudentDetail(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"success": true, "data": stud})
 }
 
-// PUT /students/:id/advisor  (Admin only)
+// ==================================================================
+// SET ADVISOR (ADMIN ONLY)
+// ==================================================================
+
+// StudentSetAdvisor godoc
+// @Summary      Set Dosen Wali (Admin)
+// @Description  Admin menetapkan dosen wali untuk mahasiswa tertentu.
+// @Tags         Student
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id       path      string             true  "Student ID"
+// @Param        request  body      map[string]string  true  "Body: { advisor_id: 'uuid-dosen' }"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Failure      500      {object}  map[string]interface{}
+// @Router       /students/{id}/advisor [put]
 func StudentSetAdvisor(c *fiber.Ctx) error {
 	studentID := c.Params("id")
 	var body struct {
@@ -99,7 +145,23 @@ func StudentSetAdvisor(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"success": true, "message": "Advisor updated"})
 }
 
-// GET /students/:id/achievements
+// ==================================================================
+// STUDENT ACHIEVEMENTS LIST
+// ==================================================================
+
+// StudentAchievements godoc
+// @Summary      Lihat Prestasi Mahasiswa Tertentu
+// @Description  Melihat daftar prestasi milik mahasiswa tertentu berdasarkan ID-nya (Admin, Dosen Wali, & Pemilik Akun).
+// @Tags         Student
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Student ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /students/{id}/achievements [get]
 func StudentAchievements(c *fiber.Ctx) error {
 	studentID := c.Params("id")
 	role := c.Locals("role").(string)

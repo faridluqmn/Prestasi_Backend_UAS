@@ -5,6 +5,7 @@ import (
 	"prestasi_backend/database"
 )
 
+// GetAllRoles mengambil semua peran yang ada
 func GetAllRoles() ([]model.Role, error) {
 	query := `
 		SELECT id, name, description, created_at

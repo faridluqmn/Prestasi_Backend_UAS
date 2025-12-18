@@ -6,7 +6,7 @@ import (
 	"prestasi_backend/database"
 )
 
-// Ambil semua user (untuk list admin)
+// Ambil semua user
 func GetAllUsers() ([]model.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, full_name,
@@ -70,7 +70,7 @@ func GetUserByID(id string) (*model.User, error) {
 }
 
 // Ambil user berdasarkan username (untuk login)
-func GetUserByUsername(username string) (*model.User, error) {
+var GetUserByUsername = func(username string) (*model.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, full_name,
 		       role_id, is_active, created_at, updated_at
@@ -96,7 +96,7 @@ func GetUserByUsername(username string) (*model.User, error) {
 	return &u, nil
 }
 
-// Tambah user baru
+// Buat user baru
 func CreateUser(u *model.User) error {
 	query := `
 		INSERT INTO users (

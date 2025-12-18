@@ -12,8 +12,20 @@ import (
 )
 
 // ==================================================================
-// GET /api/v1/achievements  — list all (role filtered)
+// LIST ACHIEVEMENTS
 // ==================================================================
+
+// AchievementList godoc
+// @Summary      Lihat Daftar Prestasi
+// @Description  Menampilkan daftar prestasi berdasarkan Role (Mahasiswa lihat punya sendiri, Dosen lihat bimbingan, Admin lihat semua).
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /achievements [get]
 func AchievementList(c *fiber.Ctx) error {
 
 	role := c.Locals("role").(string)
@@ -31,9 +43,7 @@ func AchievementList(c *fiber.Ctx) error {
 		return buildAchievementResponse(c, refs)
 	}
 
-	// ================================================================
 	// DOSEN WALI
-	// ================================================================
 	if role == "Dosen Wali" {
 		lecturer, err := repository.GetLecturerByUserID(userID)
 		if err != nil {
@@ -49,9 +59,7 @@ func AchievementList(c *fiber.Ctx) error {
 		return buildAchievementResponse(c, refs)
 	}
 
-	// ================================================================
 	// MAHASISWA
-	// ================================================================
 	if role == "Mahasiswa" {
 		student, err := repository.GetStudentByUserID(userID)
 		if err != nil {
@@ -93,8 +101,20 @@ func buildAchievementResponse(c *fiber.Ctx, refs []model.AchievementReference) e
 }
 
 // ==================================================================
-// GET /api/v1/achievements/:id — detail achievement
+// DETAIL ACHIEVEMENT
 // ==================================================================
+
+// AchievementDetail godoc
+// @Summary      Detail Prestasi
+// @Description  Melihat detail lengkap satu prestasi berdasarkan ID Reference.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Achievement Reference ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]interface{}
+// @Router       /achievements/{id} [get]
 func AchievementDetail(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -122,8 +142,20 @@ func AchievementDetail(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// POST /api/v1/achievements  — create achievement
+// CREATE ACHIEVEMENT
 // ==================================================================
+
+// AchievementCreate godoc
+// @Summary      Input Prestasi Baru
+// @Description  Mahasiswa menginput data prestasi baru (Status awal: Draft). Disimpan ke MongoDB & PostgreSQL.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.AchievementCreateRequest true "Data Prestasi"
+// @Success      201  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Router       /achievements [post]
 func AchievementCreate(c *fiber.Ctx) error {
 
 	var req model.AchievementCreateRequest
@@ -174,8 +206,21 @@ func AchievementCreate(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// PUT /api/v1/achievements/:id — update achievement (only draft)
+// UPDATE ACHIEVEMENT
 // ==================================================================
+
+// AchievementUpdate godoc
+// @Summary      Update Data Prestasi
+// @Description  Mengubah data prestasi di MongoDB. Hanya bisa dilakukan jika status masih 'draft'.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path  string                        true  "Achievement ID"
+// @Param        request body  model.AchievementUpdateRequest true "Data Update"
+// @Success      200     {object} map[string]interface{}
+// @Failure      400     {object} map[string]interface{}
+// @Router       /achievements/{id} [put]
 func AchievementUpdate(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -222,56 +267,80 @@ func AchievementUpdate(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// DELETE /api/v1/achievements/:id — soft delete
+// DELETE ACHIEVEMENT
 // ==================================================================
+
+// AchievementDelete godoc
+// @Summary      Hapus Prestasi (Soft Delete)
+// @Description  Menghapus prestasi. Mahasiswa hanya bisa hapus 'draft'. Admin bisa hapus kapan saja.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Achievement ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Router       /achievements/{id} [delete]
 func AchievementDelete(c *fiber.Ctx) error {
-    refID := c.Params("id")
-    userID := c.Locals("userId").(string)
-    role := c.Locals("role").(string)
+	refID := c.Params("id")
+	userID := c.Locals("userId").(string)
+	role := c.Locals("role").(string)
 
-    // Get reference
-    ref, err := repository.GetAchievementReferenceByID(refID)
-    if err != nil {
-        return c.Status(404).JSON(fiber.Map{"error": "Data achievement tidak ditemukan"})
-    }
+	// Get reference
+	ref, err := repository.GetAchievementReferenceByID(refID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Data achievement tidak ditemukan"})
+	}
 
-    // ========= ROLE VALIDATION =========
-    switch role {
-    case "Admin":
-        // Admin bebas — tidak dicek status
+	// ========= ROLE VALIDATION =========
+	switch role {
+	case "Admin":
+		// Admin bebas — tidak dicek status
 
-    case "Mahasiswa":
-        student, _ := repository.GetStudentByUserID(userID)
-        if student == nil || student.ID != ref.StudentID {
-            return c.Status(403).JSON(fiber.Map{"error": "Tidak boleh menghapus prestasi orang lain"})
-        }
+	case "Mahasiswa":
+		student, _ := repository.GetStudentByUserID(userID)
+		if student == nil || student.ID != ref.StudentID {
+			return c.Status(403).JSON(fiber.Map{"error": "Tidak boleh menghapus prestasi orang lain"})
+		}
 
-        if ref.Status != "draft" {
-            return c.Status(403).JSON(fiber.Map{
-                "error": "Mahasiswa hanya boleh menghapus prestasi berstatus draft",
-            })
-        }
+		if ref.Status != "draft" {
+			return c.Status(403).JSON(fiber.Map{
+				"error": "Mahasiswa hanya boleh menghapus prestasi berstatus draft",
+			})
+		}
 
-    default:
-        // Dosen atau role lain tidak boleh hapus
-        return c.Status(403).JSON(fiber.Map{"error": "Role ini tidak diizinkan melakukan hapus"})
-    }
+	default:
+		// Dosen atau role lain tidak boleh hapus
+		return c.Status(403).JSON(fiber.Map{"error": "Role ini tidak diizinkan melakukan hapus"})
+	}
 
-    // ============ Soft delete Postgre ============
-    err = repository.SoftDeleteAchievementReference(refID)
-    if err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Gagal menghapus achievement"})
-    }
+	// ============ Soft delete Postgre ============
+	err = repository.SoftDeleteAchievementReference(refID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Gagal menghapus achievement"})
+	}
 
-    return c.JSON(fiber.Map{
-        "success": true,
-        "message": "Prestasi berhasil dihapus",
-    })
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Prestasi berhasil dihapus",
+	})
 }
 
 // ==================================================================
-// POST /api/v1/achievements/:id/submit — submit by mahasiswa
+// SUBMIT ACHIEVEMENT
 // ==================================================================
+
+// AchievementSubmit godoc
+// @Summary      Ajukan Prestasi (Submit)
+// @Description  Mengubah status prestasi dari 'draft' menjadi 'submitted' agar bisa diverifikasi dosen.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Achievement ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Router       /achievements/{id}/submit [post]
 func AchievementSubmit(c *fiber.Ctx) error {
 	achievementID := c.Params("id")
 	userID := c.Locals("userId").(string)
@@ -313,8 +382,20 @@ func AchievementSubmit(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// POST /api/v1/achievements/:id/verify — verify by dosen wali
+// VERIFY ACHIEVEMENT
 // ==================================================================
+
+// AchievementVerify godoc
+// @Summary      Verifikasi Prestasi (Dosen)
+// @Description  Dosen menyetujui prestasi mahasiswa bimbingannya. Status berubah jadi 'verified'.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Achievement ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Router       /achievements/{id}/verify [post]
 func AchievementVerify(c *fiber.Ctx) error {
 	achievementID := c.Params("id")
 	userID := c.Locals("userId").(string)
@@ -350,8 +431,21 @@ func AchievementVerify(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// POST /api/v1/achievements/:id/reject — reject by dosen wali
+// REJECT ACHIEVEMENT
 // ==================================================================
+
+// AchievementReject godoc
+// @Summary      Tolak Prestasi (Dosen)
+// @Description  Dosen menolak prestasi mahasiswa. Wajib menyertakan alasan penolakan.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path  string                        true  "Achievement ID"
+// @Param        request body  model.AchievementRejectRequest true "Alasan Penolakan"
+// @Success      200     {object} map[string]interface{}
+// @Failure      400     {object} map[string]interface{}
+// @Router       /achievements/{id}/reject [post]
 func AchievementReject(c *fiber.Ctx) error {
 	achievementID := c.Params("id")
 	userID := c.Locals("userId").(string)
@@ -388,8 +482,19 @@ func AchievementReject(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// GET /api/v1/achievements/:id/history — lihat status
+// HISTORY ACHIEVEMENT
 // ==================================================================
+
+// AchievementHistory godoc
+// @Summary      History Status Prestasi
+// @Description  Melihat riwayat kapan prestasi disubmit, diverifikasi, atau ditolak.
+// @Tags         Achievement
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Achievement ID"
+// @Success      200  {object} map[string]interface{}
+// @Router       /achievements/{id}/history [get]
 func AchievementHistory(c *fiber.Ctx) error {
 	achievementID := c.Params("id")
 
@@ -411,54 +516,67 @@ func AchievementHistory(c *fiber.Ctx) error {
 }
 
 // ==================================================================
-// POST /api/v1/achievements/:id/attachments — upload file
+// UPLOAD ATTACHMENT
 // ==================================================================
+
+// AchievementUploadAttachment godoc
+// @Summary      Upload Bukti (File)
+// @Description  Upload file sertifikat/bukti prestasi. Format file bisa gambar/PDF.
+// @Tags         Achievement
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string  true  "Achievement ID"
+// @Param        file  formData  file    true  "File Attachment"
+// @Success      200   {object} map[string]interface{}
+// @Failure      400   {object} map[string]interface{}
+// @Router       /achievements/{id}/attachments [post]
 func AchievementUploadAttachment(c *fiber.Ctx) error {
-    refID := c.Params("id")
-    userID := c.Locals("userId").(string)
-    role := c.Locals("role").(string)
+	refID := c.Params("id")
+	userID := c.Locals("userId").(string)
+	role := c.Locals("role").(string)
 
-    // Ambil reference dari Postgre
-    ref, err := repository.GetAchievementReferenceByID(refID)
-    if err != nil {
-        return c.Status(404).JSON(fiber.Map{"error": "Data achievement tidak ditemukan"})
-    }
+	// Ambil reference dari Postgre
+	ref, err := repository.GetAchievementReferenceByID(refID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Data achievement tidak ditemukan"})
+	}
 
-    // Cek hak upload
-    switch role {
-    case "Admin":
-        // boleh semua
-    case "Mahasiswa":
-        student, _ := repository.GetStudentByUserID(userID)
-        if student == nil || student.ID != ref.StudentID {
-            return c.Status(403).JSON(fiber.Map{"error": "Tidak boleh mengupload file ke prestasi orang lain"})
-        }
-    default:
-        return c.Status(403).JSON(fiber.Map{"error": "Role ini tidak diperbolehkan upload attachment"})
-    }
+	// Cek hak upload
+	switch role {
+	case "Admin":
+		// boleh semua
+	case "Mahasiswa":
+		student, _ := repository.GetStudentByUserID(userID)
+		if student == nil || student.ID != ref.StudentID {
+			return c.Status(403).JSON(fiber.Map{"error": "Tidak boleh mengupload file ke prestasi orang lain"})
+		}
+	default:
+		return c.Status(403).JSON(fiber.Map{"error": "Role ini tidak diperbolehkan upload attachment"})
+	}
 
-    // Ambil file upload
-    f, err := c.FormFile("file")
-    if err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": "File tidak ditemukan"})
-    }
+	// Ambil file upload
+	f, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "File tidak ditemukan"})
+	}
 
-    filename := time.Now().Format("20060102_150405") + "_" + f.Filename
-    path := "./uploads/" + filename
+	filename := time.Now().Format("20060102_150405") + "_" + f.Filename
+	path := "./uploads/" + filename
 
-    if err := c.SaveFile(f, path); err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan file"})
-    }
+	if err := c.SaveFile(f, path); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan file"})
+	}
 
-    // Tambah attachment ke dokumen Mongo
-    err = repository.AddAchievementAttachment(ref.MongoAchievementID, filename)
-    if err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan attachment"})
-    }
+	// Tambah attachment ke dokumen Mongo
+	err = repository.AddAchievementAttachment(ref.MongoAchievementID, filename)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan attachment"})
+	}
 
-    return c.JSON(fiber.Map{
-        "success": true,
-        "message": "Attachment berhasil ditambahkan",
-        "filename": filename,
-    })
+	return c.JSON(fiber.Map{
+		"success":  true,
+		"message":  "Attachment berhasil ditambahkan",
+		"filename": filename,
+	})
 }

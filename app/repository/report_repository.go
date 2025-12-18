@@ -9,9 +9,7 @@ type AchievementStats struct {
 	Total  int    `json:"total"`
 }
 
-// ==============================
-// Statistik global prestasi
-// ==============================
+// GetAchievementStats
 func GetAchievementStats() ([]AchievementStats, error) {
 	query := `
 		SELECT status, COUNT(*) as total
@@ -37,9 +35,7 @@ func GetAchievementStats() ([]AchievementStats, error) {
 	return stats, nil
 }
 
-// ==============================
-// Statistik per mahasiswa
-// ==============================
+// GetStudentAchievementStats
 func GetStudentAchievementStats(studentID string) ([]AchievementStats, error) {
 	query := `
 		SELECT status, COUNT(*) as total

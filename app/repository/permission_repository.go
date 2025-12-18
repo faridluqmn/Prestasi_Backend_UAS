@@ -5,6 +5,7 @@ import (
 	"prestasi_backend/database"
 )
 
+// GetAllPermissions mengambil semua izin yang ada
 func GetAllPermissions() ([]model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description
@@ -35,6 +36,7 @@ func GetAllPermissions() ([]model.Permission, error) {
 	return list, rows.Err()
 }
 
+// GetPermissionByID mengambil izin berdasarkan UUID
 func GetPermissionByID(id string) (*model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description
@@ -56,6 +58,7 @@ func GetPermissionByID(id string) (*model.Permission, error) {
 	return &p, nil
 }
 
+// GetPermissionByName mengambil izin berdasarkan nama
 func GetPermissionByName(name string) (*model.Permission, error) {
 	query := `
 		SELECT id, name, resource, action, description

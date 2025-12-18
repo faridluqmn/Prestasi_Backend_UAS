@@ -208,7 +208,7 @@ func GetAllAchievementReferences() ([]model.AchievementReference, error) {
 	return list, rows.Err()
 }
 
-// Daftar reference untuk dosen wali (mahasiswa bimbingannya)
+// Ambil daftar reference milik mahasiswa yang dibimbing dosen tertentu
 func GetAchievementReferencesByAdvisor(lecturerID string) ([]model.AchievementReference, error) {
 	// join students untuk filter advisor_id
 	query := `
@@ -300,7 +300,7 @@ func UpdateAchievementStatus(id, status string) error {
 	return err
 }
 
-// Submit: ubah jadi submitted + timestamp
+// SubmitAchievement
 func SubmitAchievementReference(id string) error {
 	now := time.Now()
 	query := `
@@ -314,7 +314,7 @@ func SubmitAchievementReference(id string) error {
 	return err
 }
 
-// Verifikasi: status verified + verified_at + verified_by
+// VerifyAchievement
 func VerifyAchievementReference(id, verifierUserID string) error {
 	now := time.Now()
 	query := `
@@ -329,7 +329,6 @@ func VerifyAchievementReference(id, verifierUserID string) error {
 	return err
 }
 
-// Reject: status rejected + note
 func RejectAchievementReference(id, verifierUserID, note string) error {
 	now := time.Now()
 	query := `

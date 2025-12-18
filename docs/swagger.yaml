@@ -1,0 +1,1018 @@
+basePath: /api/v1
+definitions:
+  model.AchievementCreateRequest:
+    type: object
+  model.AchievementRejectRequest:
+    properties:
+      note:
+        description: Alasan mengapa prestasi ditolak
+        example: Sertifikat tidak valid atau kadaluarsa
+        type: string
+    type: object
+  model.AchievementUpdateRequest:
+    properties:
+      description:
+        example: Update deskripsi prestasi
+        type: string
+      details:
+        type: object
+      points:
+        example: 100
+        type: integer
+      tags:
+        example:
+        - teknologi
+        items:
+          type: string
+        type: array
+      title:
+        example: Juara 1 Hackathon Nasional 2025 (Updated)
+        type: string
+    type: object
+  model.LoginRequest:
+    properties:
+      password:
+        example: SecurePass123!
+        type: string
+      username:
+        example: mahasiswa123
+        type: string
+    type: object
+  model.UserCreateRequest:
+    properties:
+      email:
+        example: dosen@univ.ac.id
+        type: string
+      full_name:
+        example: Dr. Ahmad Yani
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      password:
+        example: StrictPass2025!
+        type: string
+      role_id:
+        example: uuid-role-dosen
+        type: string
+      username:
+        example: dosen_wali1
+        type: string
+    type: object
+  model.UserUpdateRequest:
+    properties:
+      email:
+        example: newmail@univ.ac.id
+        type: string
+      full_name:
+        example: John Doe Updated
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      password:
+        description: optional
+        example: NewSecurePass123!
+        type: string
+      username:
+        example: mahasiswa_edit
+        type: string
+    type: object
+  model.UserUpdateRoleRequest:
+    properties:
+      role_id:
+        example: uuid-role-admin
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: muhammad.farid.luqman.410762-2023@vokasi.unair.ac.id
+    name: Muhammad Farid Luqman Hakim - 434231058
+  description: Dokumentasi Backend UAS. <br> **Fitur Utama:** <br> 1. Authentication
+    (PostgreSQL) <br> 2. Manajemen Prestasi Dinamis (MongoDB).
+  termsOfService: http://swagger.io/terms/
+  title: Sistem Prestasi Mahasiswa API
+paths:
+  /achievements:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan daftar prestasi berdasarkan Role (Mahasiswa lihat punya
+        sendiri, Dosen lihat bimbingan, Admin lihat semua).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Daftar Prestasi
+      tags:
+      - Achievement
+    post:
+      consumes:
+      - application/json
+      description: 'Mahasiswa menginput data prestasi baru (Status awal: Draft). Disimpan
+        ke MongoDB & PostgreSQL.'
+      parameters:
+      - description: Data Prestasi
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AchievementCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Input Prestasi Baru
+      tags:
+      - Achievement
+  /achievements/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus prestasi. Mahasiswa hanya bisa hapus 'draft'. Admin bisa
+        hapus kapan saja.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Hapus Prestasi (Soft Delete)
+      tags:
+      - Achievement
+    get:
+      consumes:
+      - application/json
+      description: Melihat detail lengkap satu prestasi berdasarkan ID Reference.
+      parameters:
+      - description: Achievement Reference ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Detail Prestasi
+      tags:
+      - Achievement
+    put:
+      consumes:
+      - application/json
+      description: Mengubah data prestasi di MongoDB. Hanya bisa dilakukan jika status
+        masih 'draft'.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data Update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AchievementUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update Data Prestasi
+      tags:
+      - Achievement
+  /achievements/{id}/attachments:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file sertifikat/bukti prestasi. Format file bisa gambar/PDF.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: File Attachment
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload Bukti (File)
+      tags:
+      - Achievement
+  /achievements/{id}/history:
+    get:
+      consumes:
+      - application/json
+      description: Melihat riwayat kapan prestasi disubmit, diverifikasi, atau ditolak.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: History Status Prestasi
+      tags:
+      - Achievement
+  /achievements/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Dosen menolak prestasi mahasiswa. Wajib menyertakan alasan penolakan.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Alasan Penolakan
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AchievementRejectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Tolak Prestasi (Dosen)
+      tags:
+      - Achievement
+  /achievements/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Mengubah status prestasi dari 'draft' menjadi 'submitted' agar
+        bisa diverifikasi dosen.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Ajukan Prestasi (Submit)
+      tags:
+      - Achievement
+  /achievements/{id}/verify:
+    post:
+      consumes:
+      - application/json
+      description: Dosen menyetujui prestasi mahasiswa bimbingannya. Status berubah
+        jadi 'verified'.
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verifikasi Prestasi (Dosen)
+      tags:
+      - Achievement
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Otentikasi user menggunakan username dan password untuk mendapatkan
+        JWT Token.
+      parameters:
+      - description: Credential User
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login Pengguna
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Keluar dari aplikasi (Client-side clear token).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - Authentication
+  /auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: Mendapatkan data profil user yang sedang login (berdasarkan Token).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Profil Saya
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Memperbarui token JWT untuk memperpanjang sesi login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Refresh Token
+      tags:
+      - Authentication
+  /lecturers:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan data dosen. Admin bisa melihat semua dosen, Mahasiswa
+        hanya melihat dosen walinya sendiri.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Daftar Dosen
+      tags:
+      - Lecturer
+  /lecturers/{id}/advisees:
+    get:
+      consumes:
+      - application/json
+      description: Melihat daftar mahasiswa yang dibimbing oleh dosen tertentu. Dosen
+        hanya bisa melihat bimbingannya sendiri.
+      parameters:
+      - description: Lecturer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Mahasiswa Bimbingan
+      tags:
+      - Lecturer
+  /reports/statistics:
+    get:
+      consumes:
+      - application/json
+      description: Melihat rekapitulasi data prestasi (Total Draft, Submitted, Verified,
+        Rejected). Hanya bisa diakses oleh Admin.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Statistik Keseluruhan (Admin)
+      tags:
+      - Report
+  /reports/student/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Melihat performa prestasi satu mahasiswa spesifik. Mahasiswa hanya
+        bisa lihat diri sendiri, Dosen hanya bimbingannya, Admin bebas.
+      parameters:
+      - description: Student ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Laporan Statistik Mahasiswa
+      tags:
+      - Report
+  /students:
+    get:
+      consumes:
+      - application/json
+      description: Admin melihat semua mahasiswa. Dosen Wali hanya melihat mahasiswa
+        bimbingannya.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Daftar Mahasiswa
+      tags:
+      - Student
+  /students/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Melihat detail data satu mahasiswa. Mahasiswa hanya bisa lihat
+        diri sendiri. Dosen hanya bimbingannya.
+      parameters:
+      - description: Student ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Detail Mahasiswa
+      tags:
+      - Student
+  /students/{id}/achievements:
+    get:
+      consumes:
+      - application/json
+      description: Melihat daftar prestasi milik mahasiswa tertentu berdasarkan ID-nya
+        (Admin, Dosen Wali, & Pemilik Akun).
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Prestasi Mahasiswa Tertentu
+      tags:
+      - Student
+  /students/{id}/advisor:
+    put:
+      consumes:
+      - application/json
+      description: Admin menetapkan dosen wali untuk mahasiswa tertentu.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 'Body: { advisor_id: ''uuid-dosen'' }'
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Set Dosen Wali (Admin)
+      tags:
+      - Student
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan daftar seluruh user di sistem (Biasanya Admin Only).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Lihat Semua User
+      tags:
+      - User Management
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan user baru secara manual (Admin). Password akan otomatis
+        di-hash.
+      parameters:
+      - description: Data User Baru
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Buat User Baru
+      tags:
+      - User Management
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus user dari database secara permanen.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Hapus User
+      tags:
+      - User Management
+    get:
+      consumes:
+      - application/json
+      description: Melihat detail satu user berdasarkan ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Detail User
+      tags:
+      - User Management
+    put:
+      consumes:
+      - application/json
+      description: Mengubah data user (Username, Email, Nama, Password, Status Aktif).
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data Update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update Data User
+      tags:
+      - User Management
+  /users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: 'Mengubah role/hak akses user (Misal: dari Mahasiswa ke Admin).'
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role ID Baru
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserUpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Ganti Role User
+      tags:
+      - User Management
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

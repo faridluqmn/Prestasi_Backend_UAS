@@ -36,7 +36,7 @@ func GetAllLecturers() ([]model.Lecturer, error) {
 	return list, rows.Err()
 }
 
-// ambil dosen berdasarkan id
+// ambil dosen by ID
 func GetLecturerByID(id string) (*model.Lecturer, error) {
 	query := `
 		SELECT id, user_id, lecturer_id, department, created_at

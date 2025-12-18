@@ -5,7 +5,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GET /lecturers
+// ==================================================================
+// LIST LECTURERS
+// ==================================================================
+
+// LecturerList godoc
+// @Summary      Lihat Daftar Dosen
+// @Description  Menampilkan data dosen. Admin bisa melihat semua dosen, Mahasiswa hanya melihat dosen walinya sendiri.
+// @Tags         Lecturer
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /lecturers [get]
 func LecturerList(c *fiber.Ctx) error {
 	role := c.Locals("role").(string)
 	userID := c.Locals("userId").(string)
@@ -60,7 +75,22 @@ func LecturerList(c *fiber.Ctx) error {
 	}
 }
 
-// GET /lecturers/:id/advisees
+// ==================================================================
+// LIST ADVISEES (MAHASISWA BIMBINGAN)
+// ==================================================================
+
+// LecturerAdvisees godoc
+// @Summary      Lihat Mahasiswa Bimbingan
+// @Description  Melihat daftar mahasiswa yang dibimbing oleh dosen tertentu. Dosen hanya bisa melihat bimbingannya sendiri.
+// @Tags         Lecturer
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Lecturer ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /lecturers/{id}/advisees [get]
 func LecturerAdvisees(c *fiber.Ctx) error {
 	lectID := c.Params("id")
 	role := c.Locals("role").(string)

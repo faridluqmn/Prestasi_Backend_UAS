@@ -9,6 +9,20 @@ import (
 	"github.com/google/uuid"
 )
 
+// ==================================================================
+// LIST USERS
+// ==================================================================
+
+// UserList godoc
+// @Summary      Lihat Semua User
+// @Description  Menampilkan daftar seluruh user di sistem (Biasanya Admin Only).
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /users [get]
 func UserList(c *fiber.Ctx) error {
 
 	users, err := repository.GetAllUsers()
@@ -22,6 +36,22 @@ func UserList(c *fiber.Ctx) error {
 	})
 }
 
+// ==================================================================
+// DETAIL USER
+// ==================================================================
+
+// UserDetail godoc
+// @Summary      Detail User
+// @Description  Melihat detail satu user berdasarkan ID.
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "User ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /users/{id} [get]
 func UserDetail(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -39,6 +69,22 @@ func UserDetail(c *fiber.Ctx) error {
 	})
 }
 
+// ==================================================================
+// CREATE USER
+// ==================================================================
+
+// UserCreate godoc
+// @Summary      Buat User Baru
+// @Description  Menambahkan user baru secara manual (Admin). Password akan otomatis di-hash.
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.UserCreateRequest true "Data User Baru"
+// @Success      200  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /users [post]
 func UserCreate(c *fiber.Ctx) error {
 
 	var req model.UserCreateRequest
@@ -73,6 +119,24 @@ func UserCreate(c *fiber.Ctx) error {
 	})
 }
 
+// ==================================================================
+// UPDATE USER
+// ==================================================================
+
+// UserUpdate godoc
+// @Summary      Update Data User
+// @Description  Mengubah data user (Username, Email, Nama, Password, Status Aktif).
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path  string                  true  "User ID"
+// @Param        request body  model.UserUpdateRequest true  "Data Update"
+// @Success      200     {object} map[string]interface{}
+// @Failure      400     {object} map[string]interface{}
+// @Failure      404     {object} map[string]interface{}
+// @Failure      500     {object} map[string]interface{}
+// @Router       /users/{id} [put]
 func UserUpdate(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -111,6 +175,22 @@ func UserUpdate(c *fiber.Ctx) error {
 	})
 }
 
+// ==================================================================
+// DELETE USER
+// ==================================================================
+
+// UserDelete godoc
+// @Summary      Hapus User
+// @Description  Menghapus user dari database secara permanen.
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "User ID"
+// @Success      200  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /users/{id} [delete]
 func UserDelete(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -128,6 +208,24 @@ func UserDelete(c *fiber.Ctx) error {
 	})
 }
 
+// ==================================================================
+// UPDATE ROLE
+// ==================================================================
+
+// UserUpdateRole godoc
+// @Summary      Ganti Role User
+// @Description  Mengubah role/hak akses user (Misal: dari Mahasiswa ke Admin).
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path  string                     true  "User ID"
+// @Param        request body  model.UserUpdateRoleRequest true  "Role ID Baru"
+// @Success      200     {object} map[string]interface{}
+// @Failure      400     {object} map[string]interface{}
+// @Failure      404     {object} map[string]interface{}
+// @Failure      500     {object} map[string]interface{}
+// @Router       /users/{id}/role [put]
 func UserUpdateRole(c *fiber.Ctx) error {
 	id := c.Params("id")
 

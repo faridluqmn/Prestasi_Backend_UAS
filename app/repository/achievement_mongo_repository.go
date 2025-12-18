@@ -24,13 +24,7 @@ func getAchievementCollection() (*mongo.Collection, error) {
 	return database.MongoDB.Collection("achievements"), nil
 }
 
-// @Summary      Submit Prestasi
-// @Description  Mahasiswa menambahkan laporan prestasi baru ke MongoDB [cite: 178-185]
-// @Tags         achievements
-// @Security     BearerAuth
-// @Param        achievement  body  model.AchievementCreateRequest  true  "Data Prestasi"
-// @Success      201  {object}  model.AchievementMongo
-// @Router       /achievements [post]
+// Insert achievement baru
 var CreateAchievement = func(doc *model.AchievementMongo) (string, error) {
 	coll, err := getAchievementCollection()
 	if err != nil {
@@ -53,13 +47,7 @@ var CreateAchievement = func(doc *model.AchievementMongo) (string, error) {
 	return oid.Hex(), nil
 }
 
-// @Summary      Get Detail Prestasi
-// @Description  Mengambil detail data prestasi dari MongoDB berdasarkan ID [cite: 210, 247]
-// @Tags         achievements
-// @Security     BearerAuth
-// @Param        id   path   string  true  "Mongo Achievement ID"
-// @Success      200  {object}  model.AchievementMongo
-// @Router       /achievements/{id} [get]
+// Ambil achievement berdasarkan ID
 func GetAchievementByID(id string) (*model.AchievementMongo, error) {
 	coll, err := getAchievementCollection()
 	if err != nil {
@@ -135,13 +123,7 @@ func UpdateAchievement(id string, update bson.M) error {
 	return err
 }
 
-// @Summary      Hapus Prestasi
-// @Description  Menghapus data prestasi dari MongoDB (Hard Delete) [cite: 203]
-// @Tags         achievements
-// @Security     BearerAuth
-// @Param        id   path   string  true  "Mongo Achievement ID"
-// @Success      200  {object}  map[string]string "Success message"
-// @Router       /achievements/{id} [delete]
+// Delete achievement berdasarkan ID
 func DeleteAchievement(id string) error {
 	coll, err := getAchievementCollection()
 	if err != nil {

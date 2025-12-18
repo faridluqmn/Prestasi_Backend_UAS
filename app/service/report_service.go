@@ -6,11 +6,21 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// ==================================================================
+// SYSTEM STATISTICS (ADMIN ONLY)
+// ==================================================================
 
-// =======================================================
-// GET /api/v1/reports/statistics
-// Admin only
-// =======================================================
+// ReportStatistics godoc
+// @Summary      Statistik Keseluruhan (Admin)
+// @Description  Melihat rekapitulasi data prestasi (Total Draft, Submitted, Verified, Rejected). Hanya bisa diakses oleh Admin.
+// @Tags         Report
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /reports/statistics [get]
 func ReportStatistics(c *fiber.Ctx) error {
 	role := c.Locals("role").(string)
 
@@ -34,10 +44,23 @@ func ReportStatistics(c *fiber.Ctx) error {
 	})
 }
 
-// =======================================================
-// GET /api/v1/reports/student/:id
-// Admin | Dosen Wali | Mahasiswa (ownership enforced)
-// =======================================================
+// ==================================================================
+// STUDENT REPORT
+// ==================================================================
+
+// ReportStudent godoc
+// @Summary      Laporan Statistik Mahasiswa
+// @Description  Melihat performa prestasi satu mahasiswa spesifik. Mahasiswa hanya bisa lihat diri sendiri, Dosen hanya bimbingannya, Admin bebas.
+// @Tags         Report
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Student ID (UUID)"
+// @Success      200  {object} map[string]interface{}
+// @Failure      403  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /reports/student/{id} [get]
 func ReportStudent(c *fiber.Ctx) error {
 	targetStudentID := c.Params("id")
 	role := c.Locals("role").(string)

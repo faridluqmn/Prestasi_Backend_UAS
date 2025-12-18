@@ -2,8 +2,8 @@ package repository
 
 import "prestasi_backend/database"
 
-// Ambil daftar nama permission untuk role tertentu
-func GetPermissionsByRoleID(roleID string) ([]string, error) {
+// ambil permissions by role ID
+var GetPermissionsByRoleID = func(roleID string) ([]string, error) {
 	query := `
 		SELECT p.name
 		FROM role_permissions rp
@@ -28,7 +28,7 @@ func GetPermissionsByRoleID(roleID string) ([]string, error) {
 	return perms, rows.Err()
 }
 
-// Tambah relasi role-permission (kalau nanti mau dipakai seeding / manajemen)
+// Tambah relasi role-permission
 func AddPermissionToRole(roleID, permissionID string) error {
 	query := `
 		INSERT INTO role_permissions (role_id, permission_id)
