@@ -5,6 +5,7 @@ import (
 	"prestasi_backend/database"
 )
 
+// ambil semua dosen
 func GetAllLecturers() ([]model.Lecturer, error) {
 	query := `
 		SELECT id, user_id, lecturer_id, department, created_at
@@ -35,13 +36,13 @@ func GetAllLecturers() ([]model.Lecturer, error) {
 	return list, rows.Err()
 }
 
+// ambil dosen berdasarkan id
 func GetLecturerByID(id string) (*model.Lecturer, error) {
 	query := `
 		SELECT id, user_id, lecturer_id, department, created_at
 		FROM lecturers
 		WHERE id = $1;
 	`
-
 	var l model.Lecturer
 	err := database.DB.QueryRow(query, id).Scan(
 		&l.ID,
@@ -56,14 +57,13 @@ func GetLecturerByID(id string) (*model.Lecturer, error) {
 	return &l, nil
 }
 
-// Ambil dosen berdasarkan user_id (kalau JWT user-nya dosen)
+// mapping JWT → dosen
 func GetLecturerByUserID(userID string) (*model.Lecturer, error) {
 	query := `
 		SELECT id, user_id, lecturer_id, department, created_at
 		FROM lecturers
 		WHERE user_id = $1;
 	`
-
 	var l model.Lecturer
 	err := database.DB.QueryRow(query, userID).Scan(
 		&l.ID,

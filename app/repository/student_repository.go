@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"database/sql"
 	"prestasi_backend/app/model"
 	"prestasi_backend/database"
 )
 
+// ambil semua mahasiswa
 func GetAllStudents() ([]model.Student, error) {
 	query := `
 		SELECT id, user_id, student_id, program_study,
@@ -22,22 +24,32 @@ func GetAllStudents() ([]model.Student, error) {
 	var list []model.Student
 	for rows.Next() {
 		var s model.Student
+		var advisor sql.NullString
+
 		if err := rows.Scan(
 			&s.ID,
 			&s.UserID,
 			&s.StudentID,
 			&s.ProgramStudy,
 			&s.AcademicYear,
-			&s.AdvisorID,
+			&advisor,
 			&s.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
+
+		if advisor.Valid {
+			s.AdvisorID = advisor.String
+		} else {
+			s.AdvisorID = ""
+		}
+
 		list = append(list, s)
 	}
 	return list, rows.Err()
 }
 
+// ambil mahasiswa by ID
 func GetStudentByID(id string) (*model.Student, error) {
 	query := `
 		SELECT id, user_id, student_id, program_study,
@@ -47,22 +59,31 @@ func GetStudentByID(id string) (*model.Student, error) {
 	`
 
 	var s model.Student
+	var advisor sql.NullString
+
 	err := database.DB.QueryRow(query, id).Scan(
 		&s.ID,
 		&s.UserID,
 		&s.StudentID,
 		&s.ProgramStudy,
 		&s.AcademicYear,
-		&s.AdvisorID,
+		&advisor,
 		&s.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	if advisor.Valid {
+		s.AdvisorID = advisor.String
+	} else {
+		s.AdvisorID = ""
+	}
+
 	return &s, nil
 }
 
-// Ambil student berdasarkan user_id (dipakai untuk mapping dari JWT user)
+// ambil mahasiswa berdasarkan user_id (mapping dari JWT user)
 func GetStudentByUserID(userID string) (*model.Student, error) {
 	query := `
 		SELECT id, user_id, student_id, program_study,
@@ -72,22 +93,31 @@ func GetStudentByUserID(userID string) (*model.Student, error) {
 	`
 
 	var s model.Student
+	var advisor sql.NullString
+
 	err := database.DB.QueryRow(query, userID).Scan(
 		&s.ID,
 		&s.UserID,
 		&s.StudentID,
 		&s.ProgramStudy,
 		&s.AcademicYear,
-		&s.AdvisorID,
+		&advisor,
 		&s.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	if advisor.Valid {
+		s.AdvisorID = advisor.String
+	} else {
+		s.AdvisorID = ""
+	}
+
 	return &s, nil
 }
 
-// Set dosen wali / advisor
+// set dosen wali
 func SetStudentAdvisor(studentID, lecturerID string) error {
 	query := `
 		UPDATE students
@@ -98,7 +128,7 @@ func SetStudentAdvisor(studentID, lecturerID string) error {
 	return err
 }
 
-// Ambil semua mahasiswa bimbingan dari seorang dosen wali
+// ambil mahasiswa bimbingan dosen wali
 func GetStudentsByAdvisor(lecturerID string) ([]model.Student, error) {
 	query := `
 		SELECT id, user_id, student_id, program_study,
@@ -117,17 +147,26 @@ func GetStudentsByAdvisor(lecturerID string) ([]model.Student, error) {
 	var list []model.Student
 	for rows.Next() {
 		var s model.Student
+		var advisor sql.NullString
+
 		if err := rows.Scan(
 			&s.ID,
 			&s.UserID,
 			&s.StudentID,
 			&s.ProgramStudy,
 			&s.AcademicYear,
-			&s.AdvisorID,
+			&advisor,
 			&s.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
+
+		if advisor.Valid {
+			s.AdvisorID = advisor.String
+		} else {
+			s.AdvisorID = ""
+		}
+
 		list = append(list, s)
 	}
 	return list, rows.Err()

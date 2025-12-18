@@ -271,6 +271,23 @@ func GetAchievementReferencesByAdvisor(lecturerID string) ([]model.AchievementRe
 	return list, rows.Err()
 }
 
+// Mengecek apakah mahasiswa dibimbing oleh dosen wali tertentu
+func IsStudentAdvisedBy(lecturerID, studentID string) (bool, error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM students
+		WHERE id = $1 AND advisor_id = $2;
+	`
+
+	var count int
+	err := database.DB.QueryRow(query, studentID, lecturerID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 // Update status umum
 func UpdateAchievementStatus(id, status string) error {
 	query := `
